@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { AlertTriangle, ChevronLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomBar } from "@/components/layout/bottom-bar";
 import { formatCents } from "@/lib/currency";
@@ -61,6 +61,14 @@ export function ItemizedSplitView({ draft, dispatch, onBack, onContinue }: Itemi
   const goTo = (next: number) => {
     setFinishError(null);
     setIndex(Math.max(0, Math.min(items.length - 1, next)));
+  };
+
+  const handleBack = () => {
+    if (isFirst) {
+      onBack();
+      return;
+    }
+    goTo(currentIndex - 1);
   };
 
   const handleFinish = () => {
@@ -154,36 +162,6 @@ export function ItemizedSplitView({ draft, dispatch, onBack, onContinue }: Itemi
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-11 w-11 rounded-full"
-            aria-label="Previous item"
-            disabled={isFirst}
-            onClick={() => goTo(currentIndex - 1)}
-          >
-            <ChevronLeft className="size-4" aria-hidden="true" />
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {unassignedItemIds.length > 0
-              ? `${unassignedItemIds.length} unassigned`
-              : "All items assigned"}
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-11 w-11 rounded-full"
-            aria-label="Next item"
-            disabled={isLast}
-            onClick={() => goTo(currentIndex + 1)}
-          >
-            <ChevronRight className="size-4" aria-hidden="true" />
-          </Button>
-        </div>
-
         {finishError && (
           <p className="text-center text-xs text-destructive" role="alert">
             {finishError}
@@ -192,7 +170,7 @@ export function ItemizedSplitView({ draft, dispatch, onBack, onContinue }: Itemi
       </div>
 
       <BottomBar>
-        <Button type="button" variant="outline" size="lg" className="h-12 flex-1 text-base" onClick={onBack}>
+        <Button type="button" variant="outline" size="lg" className="h-12 flex-1 text-base" onClick={handleBack}>
           Back
         </Button>
         {isLast ? (
