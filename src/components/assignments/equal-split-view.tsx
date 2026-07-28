@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomBar } from "@/components/layout/bottom-bar";
 import { calculateEqualSplit } from "@/lib/calculations/equal-split";
+import { getEffectiveTotalCents } from "@/lib/split-engine";
 import { formatCents } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import type { BillDraftAction } from "@/lib/bill-reducer";
@@ -17,7 +18,7 @@ type EqualSplitViewProps = {
 };
 
 export function EqualSplitView({ draft, dispatch, onBack, onContinue }: EqualSplitViewProps) {
-  const totalCents = draft.enteredTotalCents ?? 0;
+  const totalCents = getEffectiveTotalCents(draft);
   const { breakdowns } = calculateEqualSplit(totalCents, draft.people, draft.excludedPersonIds);
   const shareByPersonId = new Map(breakdowns.map((b) => [b.personId, b.totalCents]));
   const includedCount = draft.people.length - draft.excludedPersonIds.length;
