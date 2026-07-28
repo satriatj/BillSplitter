@@ -74,7 +74,7 @@ export function ItemRow({
           aria-label={`Quantity for ${item.name || `item ${index + 1}`}`}
         />
         <CurrencyInput
-          value={item.unitPriceCents}
+          value={item.unitPriceCents || null}
           onChange={(cents) => onUpdate({ unitPriceCents: cents ?? 0 })}
           className="flex-1"
           aria-label={`Unit price for ${item.name || `item ${index + 1}`}`}

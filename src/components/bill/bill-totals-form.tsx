@@ -64,7 +64,7 @@ export function BillTotalsForm({
           <Label htmlFor="tax">Tax</Label>
           <CurrencyInput
             id="tax"
-            value={adjustments.taxCents}
+            value={adjustments.taxCents || null}
             onChange={(cents) => onAdjustmentChange("taxCents", cents ?? 0)}
           />
         </div>
@@ -72,7 +72,7 @@ export function BillTotalsForm({
           <Label htmlFor="tip">Tip</Label>
           <CurrencyInput
             id="tip"
-            value={adjustments.tipCents}
+            value={adjustments.tipCents || null}
             onChange={(cents) => onAdjustmentChange("tipCents", cents ?? 0)}
           />
         </div>
@@ -80,7 +80,7 @@ export function BillTotalsForm({
           <Label htmlFor="fee">Fee / service charge</Label>
           <CurrencyInput
             id="fee"
-            value={adjustments.feeCents}
+            value={adjustments.feeCents || null}
             onChange={(cents) => onAdjustmentChange("feeCents", cents ?? 0)}
           />
         </div>
@@ -88,7 +88,7 @@ export function BillTotalsForm({
           <Label htmlFor="discount">Discount</Label>
           <CurrencyInput
             id="discount"
-            value={adjustments.discountCents}
+            value={adjustments.discountCents || null}
             onChange={(cents) => onAdjustmentChange("discountCents", cents ?? 0)}
           />
         </div>
