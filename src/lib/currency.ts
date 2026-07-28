@@ -67,7 +67,7 @@ export function parseCurrencyToCents(
     return { ok: false, error: "Enter a valid amount" };
   }
 
-  const [wholeRaw, fracRaw = ""] = working.split(".");
+  const [wholeRaw = "", fracRaw = ""] = working.split(".");
   const whole = wholeRaw === "" ? "0" : wholeRaw;
 
   let fracDigits = fracRaw;
