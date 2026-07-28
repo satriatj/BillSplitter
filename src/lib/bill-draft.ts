@@ -1,4 +1,4 @@
-import type { BillDraft, Person, ReceiptItem } from "@/types/bill";
+import type { BillDraft, PaymentMethod, PaymentMethodType, Person, ReceiptItem } from "@/types/bill";
 import { createId } from "./id";
 
 export function createEmptyReceiptItem(): ReceiptItem {
@@ -7,6 +7,10 @@ export function createEmptyReceiptItem(): ReceiptItem {
 
 export function createPerson(name: string): Person {
   return { id: createId(), name };
+}
+
+export function createPaymentMethod(type: PaymentMethodType, value: string): PaymentMethod {
+  return { id: createId(), type, value };
 }
 
 export function createEmptyDraft(): BillDraft {

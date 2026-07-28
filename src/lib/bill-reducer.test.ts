@@ -84,6 +84,70 @@ describe("billDraftReducer", () => {
     expect(state.totalMismatchAcknowledged).toBe(false);
   });
 
+  it("adds a payment method to the correct person only", () => {
+    let state = createEmptyDraft();
+    state = billDraftReducer(state, { type: "ADD_PERSON", name: "Jason" });
+    const you = state.people[0]!;
+    const jason = state.people[1]!;
+
+    state = billDraftReducer(state, {
+      type: "ADD_PAYMENT_METHOD",
+      personId: you.id,
+      method: { id: "m1", type: "venmo", value: "@satria" },
+    });
+
+    expect(state.people.find((p) => p.id === you.id)?.paymentMethods).toEqual([
+      { id: "m1", type: "venmo", value: "@satria" },
+    ]);
+    expect(state.people.find((p) => p.id === jason.id)?.paymentMethods).toBeUndefined();
+  });
+
+  it("appends multiple payment methods for the same person in order", () => {
+    let state = createEmptyDraft();
+    const you = state.people[0]!;
+
+    state = billDraftReducer(state, {
+      type: "ADD_PAYMENT_METHOD",
+      personId: you.id,
+      method: { id: "m1", type: "venmo", value: "@satria" },
+    });
+    state = billDraftReducer(state, {
+      type: "ADD_PAYMENT_METHOD",
+      personId: you.id,
+      method: { id: "m2", type: "zelle", value: "555-1234" },
+    });
+
+    expect(state.people.find((p) => p.id === you.id)?.paymentMethods).toEqual([
+      { id: "m1", type: "venmo", value: "@satria" },
+      { id: "m2", type: "zelle", value: "555-1234" },
+    ]);
+  });
+
+  it("removes a payment method by id without touching others", () => {
+    let state = createEmptyDraft();
+    const you = state.people[0]!;
+    state = billDraftReducer(state, {
+      type: "ADD_PAYMENT_METHOD",
+      personId: you.id,
+      method: { id: "m1", type: "venmo", value: "@satria" },
+    });
+    state = billDraftReducer(state, {
+      type: "ADD_PAYMENT_METHOD",
+      personId: you.id,
+      method: { id: "m2", type: "zelle", value: "555-1234" },
+    });
+
+    state = billDraftReducer(state, {
+      type: "REMOVE_PAYMENT_METHOD",
+      personId: you.id,
+      methodId: "m1",
+    });
+
+    expect(state.people.find((p) => p.id === you.id)?.paymentMethods).toEqual([
+      { id: "m2", type: "zelle", value: "555-1234" },
+    ]);
+  });
+
   it("RESET returns a brand new empty draft", () => {
     let state = createEmptyDraft();
     state = billDraftReducer(state, { type: "SET_NAME", name: "Dinner" });

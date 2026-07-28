@@ -1,6 +1,7 @@
 import type {
   BillAdjustments,
   BillDraft,
+  PaymentMethod,
   ReceiptItem,
   SplitMode,
   WizardStep,
@@ -23,6 +24,8 @@ export type BillDraftAction =
   | { type: "USE_CALCULATED_TOTAL"; calculatedTotalCents: number }
   | { type: "ACK_TOTAL_MISMATCH" }
   | { type: "RENAME_PERSON"; id: string; name: string }
+  | { type: "ADD_PAYMENT_METHOD"; personId: string; method: PaymentMethod }
+  | { type: "REMOVE_PAYMENT_METHOD"; personId: string; methodId: string }
   | { type: "ADD_PERSON"; name: string }
   | { type: "REMOVE_PERSON"; id: string }
   | { type: "SET_PAYER"; id: string }
@@ -114,6 +117,28 @@ export function billDraftReducer(state: BillDraft, action: BillDraftAction): Bil
       return {
         ...state,
         people: state.people.map((p) => (p.id === action.id ? { ...p, name: action.name } : p)),
+        ...touch(),
+      };
+
+    case "ADD_PAYMENT_METHOD":
+      return {
+        ...state,
+        people: state.people.map((p) =>
+          p.id === action.personId
+            ? { ...p, paymentMethods: [...(p.paymentMethods ?? []), action.method] }
+            : p
+        ),
+        ...touch(),
+      };
+
+    case "REMOVE_PAYMENT_METHOD":
+      return {
+        ...state,
+        people: state.people.map((p) =>
+          p.id === action.personId
+            ? { ...p, paymentMethods: (p.paymentMethods ?? []).filter((m) => m.id !== action.methodId) }
+            : p
+        ),
         ...touch(),
       };
 

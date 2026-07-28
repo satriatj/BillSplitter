@@ -7,9 +7,20 @@
 
 export type SplitMode = "equal" | "itemized";
 
+export type PaymentMethodType = "venmo" | "zelle" | "paypal" | "cashapp" | "other";
+
+/** A single way to pay someone back, e.g. { type: "venmo", value: "@satria" }. */
+export type PaymentMethod = {
+  id: string;
+  type: PaymentMethodType;
+  value: string;
+};
+
 export type Person = {
   id: string;
   name: string;
+  /** How to pay this person back, shown when they're the payer. A person can list more than one. */
+  paymentMethods?: PaymentMethod[];
 };
 
 export type ReceiptItem = {

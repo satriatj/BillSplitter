@@ -56,6 +56,82 @@ describe("buildSummaryText", () => {
     expect(text.startsWith("$10.00\n")).toBe(true);
   });
 
+  it("appends a single payment method as a trailing line when present", () => {
+    const draft = createEmptyDraft();
+    draft.name = "Dinner at Hawi";
+    const satria = createPerson("Satria");
+    satria.paymentMethods = [{ id: "m1", type: "venmo", value: "@satria" }];
+    const andrew = createPerson("Andrew");
+    draft.people = [satria, andrew];
+    draft.payerId = satria.id;
+    draft.enteredTotalCents = 1000;
+
+    const result: SplitResult = {
+      breakdowns: [
+        { personId: satria.id, itemSubtotalCents: 500, taxCents: 0, tipCents: 0, feeCents: 0, discountCents: 0, totalCents: 500 },
+        { personId: andrew.id, itemSubtotalCents: 500, taxCents: 0, tipCents: 0, feeCents: 0, discountCents: 0, totalCents: 500 },
+      ],
+      itemDetails: {},
+    };
+
+    const text = buildSummaryText(draft, result);
+    expect(text).toBe(
+      [
+        "Dinner at Hawi — $10.00",
+        "",
+        "Andrew owes Satria $5.00",
+        "Satria paid and covers $5.00",
+        "",
+        "Pay Satria via Venmo @satria",
+      ].join("\n")
+    );
+  });
+
+  it("joins multiple payment methods with 'or' in the trailing line", () => {
+    const draft = createEmptyDraft();
+    draft.name = "Dinner at Hawi";
+    const satria = createPerson("Satria");
+    satria.paymentMethods = [
+      { id: "m1", type: "venmo", value: "@satria" },
+      { id: "m2", type: "zelle", value: "555-1234" },
+    ];
+    const andrew = createPerson("Andrew");
+    draft.people = [satria, andrew];
+    draft.payerId = satria.id;
+    draft.enteredTotalCents = 1000;
+
+    const result: SplitResult = {
+      breakdowns: [
+        { personId: satria.id, itemSubtotalCents: 500, taxCents: 0, tipCents: 0, feeCents: 0, discountCents: 0, totalCents: 500 },
+        { personId: andrew.id, itemSubtotalCents: 500, taxCents: 0, tipCents: 0, feeCents: 0, discountCents: 0, totalCents: 500 },
+      ],
+      itemDetails: {},
+    };
+
+    const text = buildSummaryText(draft, result);
+    expect(text.endsWith("Pay Satria via Venmo @satria or Zelle 555-1234")).toBe(true);
+  });
+
+  it("omits the payment info line entirely when no methods were added", () => {
+    const draft = createEmptyDraft();
+    const you = draft.people[0]!;
+    const jason = createPerson("Jason");
+    draft.people = [you, jason];
+    draft.payerId = you.id;
+    draft.enteredTotalCents = 1000;
+
+    const result: SplitResult = {
+      breakdowns: [
+        { personId: you.id, itemSubtotalCents: 500, taxCents: 0, tipCents: 0, feeCents: 0, discountCents: 0, totalCents: 500 },
+        { personId: jason.id, itemSubtotalCents: 500, taxCents: 0, tipCents: 0, feeCents: 0, discountCents: 0, totalCents: 500 },
+      ],
+      itemDetails: {},
+    };
+
+    const text = buildSummaryText(draft, result);
+    expect(text).not.toContain("Pay");
+  });
+
   it("skips people excluded from an equal split (absent from breakdowns)", () => {
     const draft = createEmptyDraft();
     const you = draft.people[0]!;

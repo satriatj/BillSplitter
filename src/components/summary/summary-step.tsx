@@ -6,6 +6,7 @@ import { BottomBar } from "@/components/layout/bottom-bar";
 import { formatCents } from "@/lib/currency";
 import { getEffectiveTotalCents, getSplitResultForDraft } from "@/lib/split-engine";
 import { buildSummaryText } from "@/lib/summary-text";
+import { formatPaymentMethodsList } from "@/lib/payment-methods";
 import type { BillDraftAction } from "@/lib/bill-reducer";
 import type { BillDraft } from "@/types/bill";
 import { PersonSummaryCard } from "./person-summary-card";
@@ -24,6 +25,8 @@ export function SummaryStep({ draft, dispatch }: SummaryStepProps) {
   const nameById = new Map(draft.people.map((p) => [p.id, p.name.trim() || "Unnamed"]));
   const payerName = draft.payerId ? (nameById.get(draft.payerId) ?? "Payer") : "Payer";
   const payerBreakdown = draft.payerId ? breakdownByPersonId.get(draft.payerId) : undefined;
+  const payerPaymentMethods = draft.people.find((p) => p.id === draft.payerId)?.paymentMethods ?? [];
+  const payerPaymentInfo = formatPaymentMethodsList(payerPaymentMethods);
 
   const summaryText = buildSummaryText(draft, result);
 
@@ -38,6 +41,9 @@ export function SummaryStep({ draft, dispatch }: SummaryStepProps) {
           </p>
           <p className="text-3xl font-semibold tracking-tight tabular-nums">{formatCents(totalCents)}</p>
           <p className="text-sm text-muted-foreground">Paid by {payerName}</p>
+          {payerPaymentInfo && (
+            <p className="text-sm font-medium text-primary">Pay via {payerPaymentInfo}</p>
+          )}
         </div>
 
         <div className="flex items-center justify-center gap-2">

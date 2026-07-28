@@ -11,6 +11,7 @@ import type { BillDraftAction } from "@/lib/bill-reducer";
 import type { BillDraft } from "@/types/bill";
 import { PersonRow } from "./person-row";
 import { PayerPicker } from "./payer-picker";
+import { PaymentMethodsEditor } from "./payment-methods-editor";
 import { SplitModePicker } from "./split-mode-picker";
 
 type PeopleStepProps = {
@@ -27,7 +28,8 @@ export function PeopleStep({ draft, dispatch, onBack, onContinue }: PeopleStepPr
   const duplicateIds = findDuplicateNamePersonIds(draft.people);
   const hasBlankName = draft.people.some((p) => isBlankName(p.name));
   const hasEnoughPeople = draft.people.length >= 2;
-  const hasPayer = draft.payerId !== null && draft.people.some((p) => p.id === draft.payerId);
+  const payer = draft.people.find((p) => p.id === draft.payerId) ?? null;
+  const hasPayer = payer !== null;
   const canContinue = hasEnoughPeople && !hasBlankName && duplicateIds.size === 0 && hasPayer;
 
   const handleAddPerson = () => {
@@ -101,6 +103,16 @@ export function PeopleStep({ draft, dispatch, onBack, onContinue }: PeopleStepPr
             payerId={draft.payerId}
             onChange={(id) => dispatch({ type: "SET_PAYER", id })}
           />
+          {payer && (
+            <PaymentMethodsEditor
+              payerName={payer.name.trim()}
+              methods={payer.paymentMethods ?? []}
+              onAdd={(method) => dispatch({ type: "ADD_PAYMENT_METHOD", personId: payer.id, method })}
+              onRemove={(methodId) =>
+                dispatch({ type: "REMOVE_PAYMENT_METHOD", personId: payer.id, methodId })
+              }
+            />
+          )}
         </div>
 
         <div className="space-y-2">

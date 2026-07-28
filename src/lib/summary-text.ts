@@ -1,5 +1,6 @@
 import type { BillDraft, SplitResult } from "@/types/bill";
 import { formatCents } from "./currency";
+import { formatPaymentMethodsList } from "./payment-methods";
 import { getEffectiveTotalCents } from "./split-engine";
 
 /**
@@ -10,11 +11,15 @@ import { getEffectiveTotalCents } from "./split-engine";
  *   Andrew owes Satria $29.42
  *   Jason owes Satria $22.07
  *   Satria paid and covers $34.93
+ *
+ *   Pay Satria via Venmo @satria
  */
 export function buildSummaryText(draft: BillDraft, result: SplitResult): string {
   const totalCents = getEffectiveTotalCents(draft);
   const nameById = new Map(draft.people.map((p) => [p.id, p.name.trim() || "Unnamed"]));
   const payerName = draft.payerId ? (nameById.get(draft.payerId) ?? "Payer") : "Payer";
+  const payerPaymentMethods = draft.people.find((p) => p.id === draft.payerId)?.paymentMethods ?? [];
+  const payerPaymentInfo = formatPaymentMethodsList(payerPaymentMethods);
 
   const title = draft.name.trim()
     ? `${draft.name.trim()} — ${formatCents(totalCents)}`
@@ -32,6 +37,10 @@ export function buildSummaryText(draft: BillDraft, result: SplitResult): string 
 
   const payerBreakdown = draft.payerId ? breakdownByPersonId.get(draft.payerId) : undefined;
   lines.push(`${payerName} paid and covers ${formatCents(payerBreakdown?.totalCents ?? 0)}`);
+
+  if (payerPaymentInfo) {
+    lines.push("", `Pay ${payerName} via ${payerPaymentInfo}`);
+  }
 
   return [title, "", ...lines].join("\n");
 }
