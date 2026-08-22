@@ -11,6 +11,7 @@ import type { BillDraftAction } from "@/lib/bill-reducer";
 import type { BillDraft } from "@/types/bill";
 import { ItemList } from "./item-list";
 import { BillTotalsForm } from "./bill-totals-form";
+import { ScanReceiptButton } from "./scan-receipt-button";
 
 type BillStepProps = {
   draft: BillDraft;
@@ -60,6 +61,11 @@ export function BillStep({ draft, dispatch, onContinue }: BillStepProps) {
             placeholder="e.g. Dinner at Hawi"
             className="h-11 text-base"
           />
+        </div>
+
+        <div className="space-y-2">
+          <ScanReceiptButton hasName={draft.name.trim() !== ""} dispatch={dispatch} />
+          <p className="text-center text-xs text-muted-foreground">or add items manually below</p>
         </div>
 
         <div className="space-y-2">
