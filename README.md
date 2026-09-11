@@ -60,8 +60,34 @@ Without a key, the "Scan receipt" button still appears but shows an error toast 
 manual entry keeps working either way. See `.env.example` for the full list of vars, including
 an optional `GEMINI_MODEL` override.
 
+## Deploying to Cloudflare
+
+This app deploys to Cloudflare Workers via [OpenNext](https://opennext.js.org/cloudflare), which
+runs the app (including the `/api/scan-receipt` route) as-is — no code changes needed.
+
+```bash
+npx wrangler login          # one-time
+npm run deploy               # builds and deploys
+```
+
+The Gemini key isn't in git, so it needs to be set on the Worker as a secret (not a plain
+variable, since it's sensitive) after the first deploy:
+
+```bash
+npx wrangler secret put GEMINI_API_KEY
+```
+
+(`GEMINI_MODEL`, if you use it, can be set the same way, or as a plain var in `wrangler.jsonc`
+since it isn't sensitive.) Alternatively, set either one from the Cloudflare dashboard under
+**Workers & Pages → billsplitter → Settings → Variables and Secrets**.
+
+To test against the real Workers runtime locally (as opposed to `npm run dev`, which uses plain
+`next dev`), copy `.dev.vars.example` to `.dev.vars` (gitignored) and fill in your key, then run
+`npm run preview`.
+
 ## Tech stack
 
 - [Next.js](https://nextjs.org) (App Router) + React 19 + TypeScript
 - Tailwind CSS + Radix UI primitives (shadcn-style components)
 - Vitest for unit tests
+- Deployed to Cloudflare Workers via [OpenNext](https://opennext.js.org/cloudflare)

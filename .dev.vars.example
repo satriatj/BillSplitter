@@ -1,0 +1,6 @@
+# Used by `wrangler dev` / `npm run preview` (the Cloudflare Workers runtime),
+# as opposed to `.env.local` which is used by `npm run dev` (plain `next dev`).
+# Copy to `.dev.vars` (gitignored) and fill in your key.
+
+GEMINI_API_KEY=
+# GEMINI_MODEL=gemini-3.6-flash

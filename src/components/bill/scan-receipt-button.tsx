@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Loader2, ScanLine } from "lucide-react";
+import { Camera, ImageUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { compressImageForUpload } from "@/lib/compress-image";
@@ -14,8 +14,10 @@ type ScanReceiptButtonProps = {
 };
 
 export function ScanReceiptButton({ hasName, dispatch }: ScanReceiptButtonProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isScanning, setIsScanning] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const libraryInputRef = useRef<HTMLInputElement>(null);
+  const [scanningSource, setScanningSource] = useState<"camera" | "library" | null>(null);
+  const isScanning = scanningSource !== null;
 
   const applyScannedReceipt = (scanned: ScannedReceipt) => {
     if (scanned.restaurantName && !hasName) {
@@ -47,8 +49,8 @@ export function ScanReceiptButton({ hasName, dispatch }: ScanReceiptButtonProps)
     }
   };
 
-  const handleFile = async (file: File) => {
-    setIsScanning(true);
+  const handleFile = async (file: File, source: "camera" | "library") => {
+    setScanningSource(source);
     try {
       const { base64, mimeType } = await compressImageForUpload(file);
       const response = await fetch("/api/scan-receipt", {
@@ -65,14 +67,14 @@ export function ScanReceiptButton({ hasName, dispatch }: ScanReceiptButtonProps)
     } catch {
       toast.error("Couldn't scan that receipt — try again.");
     } finally {
-      setIsScanning(false);
+      setScanningSource(null);
     }
   };
 
   return (
-    <>
+    <div className="flex gap-2">
       <input
-        ref={inputRef}
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
@@ -80,23 +82,48 @@ export function ScanReceiptButton({ hasName, dispatch }: ScanReceiptButtonProps)
         onChange={(e) => {
           const file = e.target.files?.[0];
           e.target.value = "";
-          if (file) void handleFile(file);
+          if (file) void handleFile(file, "camera");
+        }}
+      />
+      <input
+        ref={libraryInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) void handleFile(file, "library");
         }}
       />
       <Button
         type="button"
         variant="outline"
-        className="h-11 w-full text-base"
+        className="h-11 flex-1 text-base"
         disabled={isScanning}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => cameraInputRef.current?.click()}
       >
-        {isScanning ? (
+        {scanningSource === "camera" ? (
           <Loader2 className="size-4 animate-spin" aria-hidden="true" />
         ) : (
-          <ScanLine className="size-4" aria-hidden="true" />
+          <Camera className="size-4" aria-hidden="true" />
         )}
-        {isScanning ? "Scanning receipt…" : "Scan receipt"}
+        {scanningSource === "camera" ? "Scanning…" : "Take photo"}
       </Button>
-    </>
+      <Button
+        type="button"
+        variant="outline"
+        className="h-11 flex-1 text-base"
+        disabled={isScanning}
+        onClick={() => libraryInputRef.current?.click()}
+      >
+        {scanningSource === "library" ? (
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+        ) : (
+          <ImageUp className="size-4" aria-hidden="true" />
+        )}
+        {scanningSource === "library" ? "Scanning…" : "Choose photo"}
+      </Button>
+    </div>
   );
 }
